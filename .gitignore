@@ -1,0 +1,80 @@
+# ========================
+# Python / FastAPI (Backend)
+# ========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Database files
+*.db
+*.sqlite3
+
+# Pytest / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Mypy
+.mypy_cache/
+
+# ========================
+# Node.js / Next.js (Frontend)
+# ========================
+node_modules/
+.next/
+out/
+
+# Next.js build output
+.next/
+next-env.d.ts
+
+# Package manager locks (keep only one — uncomment what you use)
+# package-lock.json  # uncomment if using yarn/pnpm
+# yarn.lock          # uncomment if using npm/pnpm
+# pnpm-lock.yaml     # uncomment if using npm/yarn
+
+# Environment variables
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ========================
+# General
+# ========================
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

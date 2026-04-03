@@ -2,6 +2,7 @@
 import uuid
 from sqlalchemy import Column, String
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
 
 # import από δικά μου αρχεία
 from ..database import Base
@@ -15,3 +16,10 @@ class User(Base):
     email = Column(String, unique=True, nullable=False)
     clerk_user_id = Column(String, unique=True, nullable=True)
     stripe_customer_id = Column(String, unique=True, nullable=True)
+
+    # relations
+    subscriptions = relationship("Subscription", back_populates="user")
+    rentals = relationship("Rental", back_populates="user")
+    purchases = relationship("Purchase", back_populates="user")
+    payments = relationship("Payment", back_populates="user")
+    

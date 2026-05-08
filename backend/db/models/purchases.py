@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 
 from ..database import Base
 
+
 class Purchase(Base):
     __tablename__ = "purchase"
 

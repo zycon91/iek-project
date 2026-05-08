@@ -2,8 +2,10 @@ import uuid
 from pydantic import BaseModel
 from datetime import date
 
+
 class MovieImport(BaseModel):
     tmdb_id: int
+
 
 class MovieSearchResult(BaseModel):
     tmdb_id: int
@@ -11,6 +13,7 @@ class MovieSearchResult(BaseModel):
     release_date: str
     description: str
     rating: float
+
 
 class MovieBase(BaseModel):
     title: str
@@ -22,8 +25,10 @@ class MovieBase(BaseModel):
     rental_price: int = 399
     purchase_price: int = 1499
 
+
 class MovieCreate(MovieBase):
     pass
+
 
 class MovieUpdate(BaseModel):
     title: str | None = None
@@ -34,6 +39,7 @@ class MovieUpdate(BaseModel):
     rating: int | None = None
     rental_price: int | None = None
     purchase_price: int | None = None
+
 
 class MovieResponse(MovieBase):
     id: uuid.UUID

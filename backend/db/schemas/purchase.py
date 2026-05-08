@@ -2,8 +2,10 @@ import uuid
 from pydantic import BaseModel
 from datetime import datetime
 
+
 class PurchaseCreate(BaseModel):
     movie_id: uuid.UUID
+
 
 class PurchaseResponse(BaseModel):
     id: uuid.UUID

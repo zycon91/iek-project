@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+
 class CheckoutRequest(BaseModel):
     product_name: str
     amount: int       

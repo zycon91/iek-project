@@ -1,16 +1,17 @@
 import uuid
-from sqlalchemy import Column, String, Integer, DateTime, ForeignKey
+from sqlalchemy import Column, ForeignKey, String, Integer, DateTime
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timezone
 
 from ..database import Base
 
+
 class Payment(Base):
-    __tablename__: "payment"
+    __tablename__ = "payment"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey=("user.id"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=False)
     stripe_checkout_session_id = Column(String, unique=True, nullable=False)
     stripe_payment_intent_id = Column(String, unique=True, nullable=False)
     amount = Column(Integer, nullable=False)

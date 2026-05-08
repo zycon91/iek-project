@@ -7,6 +7,7 @@ from sqlalchemy.orm import relationship
 # import από δικά μου αρχεία
 from ..database import Base
 
+
 class User(Base):
     __tablename__ = "user"
 

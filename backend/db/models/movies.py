@@ -5,10 +5,11 @@ from sqlalchemy.orm import relationship
 
 from ..database import Base
 
+
 class Movie(Base):
     __tablename__ = "movie"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, nullable=False)
+    id = Column(UUID(as_uuid=True), primary_key=True, nullable=False, default=uuid.uuid4)
     title = Column(String, nullable=False)
     description = Column(String, nullable=False)
     duration = Column(Integer, nullable=False)

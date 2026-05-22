@@ -16,3 +16,11 @@ class PurchaseResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class PurchaseAdminCreate(BaseModel):
+    user_id: uuid.UUID
+    movie_id: uuid.UUID
+    amount_paid: int
+
+class PurchaseUpdate(BaseModel):
+    amount_paid: int | None = None

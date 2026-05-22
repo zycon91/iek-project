@@ -4,4 +4,4 @@ from .movie import MovieImport, MovieSearchResult, MovieCreate, MovieUpdate, Mov
 from .stripe import CheckoutRequest
 from .subscription import SubscriptionCreate, SubscriptionUpdate, SubscriptionResponse
 from .rental import RentalCreate, RentalUpdate, RentalResponse
-from .payments import PaymentResponse
+from .payment import PaymentResponse

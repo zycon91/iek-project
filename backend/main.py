@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from db.database import Base, engine
-from routers import users_router, movies_router
+from routers import users_router, movies_router, payments_router, purchases_router, rentals_router, subscriptions_router
 
 Base.metadata.create_all(bind=engine)
 
@@ -18,3 +18,7 @@ app.add_middleware(
 
 app.include_router(users_router)
 app.include_router(movies_router)
+app.include_router(payments_router)
+app.include_router(purchases_router)
+app.include_router(rentals_router)
+app.include_router(subscriptions_router)

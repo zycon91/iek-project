@@ -1,7 +1,8 @@
 import uuid
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
+from db.schemas.pagination import Page
 from db.models.subscriptions import Subscription
 from db.database import get_db
 from db.schemas.subscription import SubscriptionCreate, SubscriptionResponse, SubscriptionUpdate
@@ -9,11 +10,23 @@ from db.schemas.subscription import SubscriptionCreate, SubscriptionResponse, Su
 
 router = APIRouter(prefix="/subscriptions", tags=["subscriptions"])
 
-@router.get("/", response_model=list[SubscriptionResponse])
+@router.get("/", response_model=Page[SubscriptionResponse])
 def get_subscriptions(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=100),
     db: Session = Depends(get_db)
 ):
-    return db.query(Subscription).all()
+    total = db.query(Subscription).count()
+
+    items = db.query(Subscription).offset(skip).limit(limit).all()
+
+    return Page[SubscriptionResponse](
+        items=items,
+        total=total,
+        skip=skip,
+        limit=limit,
+        has_more=skip + limit < total
+    )
 
 @router.get("/{subscription_id}", response_model=SubscriptionResponse)
 def get_subscription(

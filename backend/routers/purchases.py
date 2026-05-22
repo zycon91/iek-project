@@ -1,7 +1,8 @@
 import uuid
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
+from db.schemas.pagination import Page
 from db.models.purchases import Purchase
 from db.database import get_db
 from db.schemas.purchase import PurchaseResponse
@@ -9,11 +10,23 @@ from db.schemas.purchase import PurchaseResponse
 
 router = APIRouter(prefix="/purchases", tags=["purchases"])
 
-@router.get("/", response_model=list[PurchaseResponse])
+@router.get("/", response_model=Page[PurchaseResponse])
 def get_purchases(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=100),
     db: Session = Depends(get_db)
 ):
-    return db.query(Purchase).all()
+    total = db.query(Purchase).count()
+
+    items = db.query(Purchase).offset(skip).limit(limit).all()
+
+    return Page[PurchaseResponse](
+        items=items,
+        total=total,
+        skip=skip,
+        limit=limit,
+        has_more=skip + limit < total
+    )
 
 @router.get("/{purchase_id}", response_model=PurchaseResponse)
 def get_purchase(

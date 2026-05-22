@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends, HTTPException, Query
 from dotenv import load_dotenv
 
+from db.schemas.pagination import Page
 from db.database import get_db
 from db.models.movies import Movie
 from db.schemas.movie import MovieImport, MovieResponse, MovieSearchResult
@@ -66,11 +67,23 @@ def create_movie(data: MovieImport, db: Session = Depends(get_db)):
     db.refresh(movie)
     return movie
 
-@router.get("/", response_model=list[MovieResponse])
+@router.get("/", response_model=Page[MovieResponse])
 def get_movies(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db)
 ):
-    return db.query(Movie).all()
+    total = db.query(Movie).count()
+    
+    items = db.query(Movie).offset(skip).limit(limit).all()
+    
+    return Page[MovieResponse](
+        items=items,
+        total=total,
+        skip=skip,
+        limit=limit,
+        has_more=skip + limit < total
+    )
 
 @router.get("/{movie_id}", response_model=MovieResponse)
 def get_movie(

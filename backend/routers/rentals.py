@@ -1,18 +1,31 @@
 import uuid
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
+from db.schemas.pagination import Page
 from db.models.rentals import Rental
 from db.database import get_db
 from db.schemas.rental import RentalCreate, RentalResponse, RentalUpdate
 
 router = APIRouter(prefix="/rentals", tags=["rentals"])
 
-@router.get("/", response_model=list[RentalResponse])
+@router.get("/", response_model=Page[RentalResponse])
 def get_rentals(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(10, ge=1, le=50),
     db: Session = Depends(get_db)
 ):
-    return db.query(Rental).all()
+    total = db.query(Rental).count()
+
+    items = db.query(Rental).offset(skip).limit(limit).all()
+
+    return Page[RentalResponse](
+        items=items,
+        total=total,
+        skip=skip,
+        limit=limit,
+        has_more=skip + limit < total
+    )
 
 @router.get("/{rental_id}", response_model=RentalResponse)
 def get_rental(

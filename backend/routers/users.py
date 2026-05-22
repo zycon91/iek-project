@@ -1,18 +1,31 @@
 import uuid
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
+from db.schemas.pagination import Page
 from db.database import get_db
 from db.models.users import User
 from db.schemas.user import UserCreate, UserUpdate, UserResponse
 
 router = APIRouter(prefix="/users", tags=["users"])
 
-@router.get("/", response_model=list[UserResponse])
+@router.get("/", response_model=Page[UserResponse])
 def get_users(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=500),
     db: Session = Depends(get_db)
 ):
-    return db.query(User).all()
+    total = db.query(User).count()
+
+    items = db.query(User).offset(skip).limit(limit).all()
+
+    return Page[UserResponse](
+        items=items,
+        total=total,
+        skip=skip,
+        limit=limit,
+        has_more=skip + limit < total
+    )
 
 @router.get("/{user_id}", response_model=UserResponse)
 def get_user(

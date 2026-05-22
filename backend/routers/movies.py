@@ -71,11 +71,17 @@ def create_movie(data: MovieImport, db: Session = Depends(get_db)):
 def get_movies(
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
+    genre: str | None = Query(None),
     db: Session = Depends(get_db)
 ):
-    total = db.query(Movie).count()
+    query = db.query(Movie)
+
+    if genre:
+        query = query.filter(Movie.genre.ilike(f"%{genre}%"))
     
-    items = db.query(Movie).offset(skip).limit(limit).all()
+    total = query.count()
+
+    items = query.offset(skip).limit(limit).all()
     
     return Page[MovieResponse](
         items=items,

@@ -1,3 +1,4 @@
+# Τρέξιμο (από τον φάκελο backend): python scripts/seed_movies.py scripts/movies.txt
 # Ένας τίτλος ανά γραμμή. Γραμμές με # αγνοούνται.
 The Matrix
 Inception

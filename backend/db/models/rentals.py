@@ -23,5 +23,5 @@ class Rental(Base):
     end_date = Column(DateTime, nullable=False)
 
     # Relations
-    user = relationship("User", back_populates="rental")
-    movie = relationship("Movie", back_populates="rental")
+    user = relationship("User", back_populates="rentals")
+    movie = relationship("Movie", back_populates="rentals")

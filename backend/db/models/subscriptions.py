@@ -25,4 +25,4 @@ class Subscription(Base):
     is_active = Column(Boolean, nullable=False, default=True)
 
     # Relations
-    user = relationship("User", back_populates="subscription")
+    user = relationship("User", back_populates="subscriptions")

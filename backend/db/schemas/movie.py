@@ -21,7 +21,7 @@ class MovieBase(BaseModel):
     description: str
     genre: str
     release_date: date
-    rating: int
+    rating: float
     rental_price: int = 399
     purchase_price: int = 1499
 
@@ -33,7 +33,10 @@ class MovieCreate(MovieBase):
 class MovieResponseFrontPage(BaseModel):
     title: str
     release_date: date
-    rating: int
+    rating: float
+
+    class Config:
+        from_attributes = True
 
 
 class MovieUpdate(BaseModel):
@@ -42,7 +45,7 @@ class MovieUpdate(BaseModel):
     description: str | None = None
     genre: str | None = None
     release_date: date | None = None
-    rating: int | None = None
+    rating: float | None = None
     rental_price: int | None = None
     purchase_price: int | None = None
 

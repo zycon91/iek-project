@@ -17,5 +17,5 @@ class Purchase(Base):
     purchased_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
 
     # relations
-    user = relationship("User", back_populates="purchase")
-    movie = relationship("Movie", back_populates="purchase")
+    user = relationship("User", back_populates="purchases")
+    movie = relationship("Movie", back_populates="purchases")

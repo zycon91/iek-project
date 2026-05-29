@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, String, Integer, Date
+from sqlalchemy import Column, Float, String, Integer, Date
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -15,7 +15,7 @@ class Movie(Base):
     duration = Column(Integer, nullable=False)
     genre = Column(String, nullable=False, index=True)
     release_date = Column(Date, nullable=False, index=True)
-    rating = Column(Integer, nullable=False, index=True)
+    rating = Column(Float, nullable=False, index=True)
     rental_price = Column(Integer, nullable=False, default=399)
     purchase_price = Column(Integer, nullable=False, default=1499)
     

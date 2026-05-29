@@ -105,7 +105,7 @@ def get_movies(
 
     items = query.offset(skip).limit(limit).all()
     
-    return Page[MovieResponse](
+    return Page[MovieResponseFrontPage](
         items=items,
         total=total,
         skip=skip,

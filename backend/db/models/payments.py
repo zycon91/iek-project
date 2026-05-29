@@ -22,5 +22,5 @@ class Payment(Base):
     created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
 
     # relations
-    user = relationship("User", back_populates="payment")
+    user = relationship("User", back_populates="payments")
     

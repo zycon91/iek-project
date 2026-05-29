@@ -12,7 +12,7 @@ class PaymentResponse(BaseModel):
     status: str
     payment_type: str
     referrence_id: uuid.UUID | None
-    created_at: datetime
+    created_at: datetime.datetime
 
     class Config:
         from_attributes = True

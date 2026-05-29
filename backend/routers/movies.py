@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from db.schemas.pagination import Page
 from db.database import get_db
 from db.models.movies import Movie
-from db.schemas.movie import MovieImport, MovieResponse, MovieSearchResult
+from db.schemas.movie import MovieImport, MovieResponse, MovieResponseFrontPage, MovieSearchResult
 
 
 load_dotenv()
@@ -20,7 +20,9 @@ router = APIRouter(prefix="/movies", tags=["movies"])
 
 # --- Search στο TMDB (δεν σώζει στη DB) ---
 @router.get("/search", response_model=list[MovieSearchResult])
-def search_movies(q: str = Query(..., description="Τίτλος ταινίας")):
+def search_movies(
+    q: str = Query(..., description="Τίτλος ταινίας")
+    ):
     res = requests.get(
         f"{TMDB_BASE_URL}/search/movie",
         params={"api_key": TMDB_API_KEY, "query": q}
@@ -41,7 +43,10 @@ def search_movies(q: str = Query(..., description="Τίτλος ταινίας")
     ]
 
 @router.post("/", response_model=MovieResponse, status_code=201)
-def create_movie(data: MovieImport, db: Session = Depends(get_db)):
+def create_movie(
+    data: MovieImport, 
+    db: Session = Depends(get_db)
+    ):
     # Fetch λεπτομερειών από TMDB με το tmdb_id
     res = requests.get(
         f"{TMDB_BASE_URL}/movie/{data.tmdb_id}",
@@ -67,18 +72,35 @@ def create_movie(data: MovieImport, db: Session = Depends(get_db)):
     db.refresh(movie)
     return movie
 
-@router.get("/", response_model=Page[MovieResponse])
+@router.get("/", response_model=Page[MovieResponseFrontPage])
 def get_movies(
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
     genre: str | None = Query(None),
+    search: str | None = Query(None),
+    sort_by: str = Query("title"),
+    order: str = Query("asc", pattern="^(asc|desc)$"),
     db: Session = Depends(get_db)
 ):
-    query = db.query(Movie)
+    query = db.query(
+        Movie.id, Movie.title, Movie.rating, Movie.release_date,
+        Movie.genre
+    )
 
     if genre:
         query = query.filter(Movie.genre.ilike(f"%{genre}%"))
-    
+    if search:
+        query = query.filter(Movie.title.ilike(f"%{search}%"))
+
+    sort_columns = {
+        "title": Movie.title,
+        "rating": Movie.rating,
+        "release_date": Movie.release_date
+    }
+
+    column = sort_columns.get(sort_by, Movie.title)
+    query = query.order_by(column.desc() if order == "desc" else column.asc())
+
     total = query.count()
 
     items = query.offset(skip).limit(limit).all()

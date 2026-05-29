@@ -30,6 +30,12 @@ class MovieCreate(MovieBase):
     pass
 
 
+class MovieResponseFrontPage(BaseModel):
+    title: str
+    release_date: date
+    rating: int
+
+
 class MovieUpdate(BaseModel):
     title: str | None = None
     duration: int | None = None

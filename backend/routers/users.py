@@ -13,11 +13,28 @@ router = APIRouter(prefix="/users", tags=["users"])
 def get_users(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=500),
+    search: str | None = Query(None),
+    sort_by: str = Query("username"),
+    order: str = Query("asc", pattern="^(asc|desc)$"),
     db: Session = Depends(get_db)
 ):
-    total = db.query(User).count()
+    query = db.query(User)
 
-    items = db.query(User).offset(skip).limit(limit).all()
+    if search:
+        query = query.filter(User.username.ilike(f"%{search}%"))
+    
+    sort_columns = {
+        "username": User.username,
+        "fullname": User.fullname,
+        "email": User.email
+    }
+
+    column = sort_columns.get(sort_by, User.username)
+    query = query.order_by(column.desc() if order == "desc" else column.asc())
+
+    total = query.count()
+
+    items = query.offset(skip).limit(limit).all()
 
     return Page[UserResponse](
         items=items,

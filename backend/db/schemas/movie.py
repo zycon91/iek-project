@@ -31,9 +31,11 @@ class MovieCreate(MovieBase):
 
 
 class MovieResponseFrontPage(BaseModel):
+    id: uuid.UUID
     title: str
     release_date: date
     rating: float
+    thumbnail_url: str | None = None   # στη λίστα δείχνουμε το ελαφρύ thumbnail
 
     class Config:
         from_attributes = True
@@ -52,6 +54,17 @@ class MovieUpdate(BaseModel):
 
 class MovieResponse(MovieBase):
     id: uuid.UUID
-    
+    poster_url: str | None = None
+    thumbnail_url: str | None = None
+
+    class Config:
+        from_attributes = True
+
+
+class MoviePosterResponse(BaseModel):
+    movie_id: uuid.UUID
+    poster_url: str
+    thumbnail_url: str
+
     class Config:
         from_attributes = True

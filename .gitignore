@@ -27,6 +27,9 @@ ENV/
 *.db
 *.sqlite3
 
+# Uploaded media (posters/thumbnails) — δεδομένα, όχι κώδικας
+backend/uploads/
+
 # Pytest / coverage
 .pytest_cache/
 .coverage

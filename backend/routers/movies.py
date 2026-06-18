@@ -2,18 +2,26 @@ import os
 import uuid
 import requests
 from sqlalchemy.orm import Session
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from dotenv import load_dotenv
 
 from db.schemas.pagination import Page
 from db.database import get_db
 from db.models.movies import Movie
-from db.schemas.movie import MovieImport, MovieResponse, MovieResponseFrontPage, MovieSearchResult
+from db.schemas.movie import (
+    MovieImport, MovieResponse, MovieResponseFrontPage,
+    MovieSearchResult, MoviePosterResponse,
+)
+from utils.storage import save_image_bytes, create_and_save_thumbnail, delete_object
 
 
 load_dotenv()
 TMDB_API_KEY = os.getenv("TMDB_API_KEY")
 TMDB_BASE_URL = "https://api.themoviedb.org/3"
+TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/original"
+
+ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp"}
+MAX_IMAGE_SIZE = 5 * 1024 * 1024  # 5MB
 
 router = APIRouter(prefix="/movies", tags=["movies"])
 
@@ -67,6 +75,24 @@ def create_movie(
         rating=round(tmdb.get("vote_average", 0)),
     )
 
+    poster_path = tmdb.get("poster_path")
+    if poster_path:
+        try:
+            img_res = requests.get(f"{TMDB_IMAGE_BASE}{poster_path}", timeout=15)
+            if img_res.status_code == 200:
+                poster = save_image_bytes(
+                    content=img_res.content,
+                    filename=f"{data.tmdb_id}.jpg",
+                    folder="movies/posters",
+                )
+                thumb = create_and_save_thumbnail(img_res.content)
+                movie.poster_url = poster["url"]
+                movie.poster_key = poster["key"]
+                movie.thumbnail_url = thumb["url"]
+                movie.thumbnail_key = thumb["key"]
+        except requests.RequestException:
+            pass
+
     db.add(movie)
     db.commit()
     db.refresh(movie)
@@ -84,7 +110,7 @@ def get_movies(
 ):
     query = db.query(
         Movie.id, Movie.title, Movie.rating, Movie.release_date,
-        Movie.genre
+        Movie.genre, Movie.thumbnail_url
     )
 
     if genre:
@@ -122,3 +148,72 @@ def get_movie(
     if not movie:
         raise HTTPException(status_code=404, detail=f"Movie with ID {movie_id} not found.")
     return movie
+
+@router.post("/{movie_id}/poster", response_model=MoviePosterResponse)
+def upload_movie_poster(
+    movie_id: uuid.UUID,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+):
+    movie = db.query(Movie).filter(Movie.id == movie_id).first()
+    if not movie:
+        raise HTTPException(status_code=404, detail=f"Movie with ID {movie_id} not found.")
+
+    if file.content_type not in ALLOWED_IMAGE_TYPES:
+        raise HTTPException(
+            status_code=415,
+            detail=f"Unsupported file type '{file.content_type}'. Allowed: jpeg, png, webp.",
+        )
+
+    content = file.file.read()
+    if len(content) > MAX_IMAGE_SIZE:
+        raise HTTPException(status_code=413, detail="Image too large (max 5MB).")
+
+    # Πρώτα αποθηκεύονται τα νέα αρχεία, μετά σβήνονται τα παλιά,
+    # και τελευταίο γίνεται το commit — μια αποτυχία στη μέση
+    # δεν αφήνει ποτέ τη DB να δείχνει σε εικόνα που δεν υπάρχει.
+    poster = save_image_bytes(
+        content=content,
+        filename=file.filename or "poster.jpg",
+        folder="movies/posters",
+    )
+    thumb = create_and_save_thumbnail(content)
+
+    if movie.poster_key:
+        delete_object(movie.poster_key)
+    if movie.thumbnail_key:
+        delete_object(movie.thumbnail_key)
+
+    movie.poster_url = poster["url"]
+    movie.poster_key = poster["key"]
+    movie.thumbnail_url = thumb["url"]
+    movie.thumbnail_key = thumb["key"]
+    db.commit()
+    db.refresh(movie)
+
+    return MoviePosterResponse(
+        movie_id=movie.id,
+        poster_url=movie.poster_url,
+        thumbnail_url=movie.thumbnail_url,
+    )
+
+@router.delete("/{movie_id}/poster", status_code=204)
+def delete_movie_poster(
+    movie_id: uuid.UUID,
+    db: Session = Depends(get_db),
+):
+    movie = db.query(Movie).filter(Movie.id == movie_id).first()
+    if not movie:
+        raise HTTPException(status_code=404, detail=f"Movie with ID {movie_id} not found.")
+    if not movie.poster_key:
+        raise HTTPException(status_code=404, detail="Movie has no poster.")
+
+    delete_object(movie.poster_key)
+    if movie.thumbnail_key:
+        delete_object(movie.thumbnail_key)
+
+    movie.poster_url = None
+    movie.poster_key = None
+    movie.thumbnail_url = None
+    movie.thumbnail_key = None
+    db.commit()

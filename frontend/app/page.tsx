@@ -1,6 +1,9 @@
 import { Suspense } from "react";
+import { redirect } from "next/navigation";
 import { Show, RedirectToSignIn } from "@clerk/nextjs";
+import { currentUser } from "@clerk/nextjs/server";
 import MovieGrid from "./components/MovieGrid";
+import CheckoutBanner from "./components/CheckoutBanner";
 
 function GridSkeleton() {
   return (
@@ -15,11 +18,20 @@ function GridSkeleton() {
   );
 }
 
-export default function Home() {
+export default async function Home() {
+  // Οι admins «προσγειώνονται» κατευθείαν στον Πίνακα Διαχείρισης.
+  const user = await currentUser();
+  if ((user?.publicMetadata as { role?: string } | undefined)?.role === "admin") {
+    redirect("/admin");
+  }
+
   return (
     <>
       <Show when="signed-in">
         <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-10">
+          <Suspense fallback={null}>
+            <CheckoutBanner />
+          </Suspense>
           <header className="mb-8">
             <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
               Ταινίες

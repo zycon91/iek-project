@@ -18,7 +18,12 @@ class Movie(Base):
     rating = Column(Float, nullable=False, index=True)
     rental_price = Column(Integer, nullable=False, default=399)
     purchase_price = Column(Integer, nullable=False, default=1499)
-    
+
+    poster_url = Column(String, nullable=True)
+    poster_key = Column(String, nullable=True)
+    thumbnail_url = Column(String, nullable=True)
+    thumbnail_key = Column(String, nullable=True)
+
     # relations
     rentals = relationship("Rental", back_populates="movie")
     purchases = relationship("Purchase", back_populates="movie")

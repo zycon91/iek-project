@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Show, UserButton } from "@clerk/nextjs";
+import { Show, UserButton, useUser } from "@clerk/nextjs";
 
 const tabs = [
   { href: "/", label: "Αρχική" },
@@ -12,6 +12,14 @@ const tabs = [
 
 export default function Header() {
   const pathname = usePathname();
+  const { user } = useUser();
+  const isAdmin =
+    (user?.publicMetadata as { role?: string } | undefined)?.role === "admin";
+
+  // Στο admin area υπάρχει δικό του chrome (sidebar) — κρύβουμε το δημόσιο header.
+  if (pathname.startsWith("/admin")) {
+    return null;
+  }
 
   return (
     <header className="sticky top-0 z-50 flex items-center justify-between gap-4 border-b border-foreground/10 bg-background/80 px-6 py-3 backdrop-blur">
@@ -33,6 +41,14 @@ export default function Header() {
             </Link>
           );
         })}
+        {isAdmin && (
+          <Link
+            href="/admin"
+            className="ml-1 rounded-full bg-amber-500/15 px-4 py-2 text-sm font-medium text-amber-700 transition-colors hover:bg-amber-500/25 dark:text-amber-400"
+          >
+            Admin
+          </Link>
+        )}
       </nav>
 
       <div className="flex items-center">

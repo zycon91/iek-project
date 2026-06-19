@@ -1,4 +1,4 @@
-from .user import UserCreate, UserUpdate, UserResponse
+from .user import UserCreate, UserUpdate, UserResponse, UserRoleUpdate
 from .purchase import PurchaseCreate, PurchaseResponse, PurchaseAdminCreate, PurchaseUpdate
 from .movie import MovieImport, MovieSearchResult, MovieCreate, MovieUpdate, MovieResponse, MovieResponseFrontPage
 from .stripe import CheckoutRequest

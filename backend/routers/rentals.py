@@ -2,6 +2,8 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
+from db.models.users import User
+from utils.auth import require_admin
 from db.schemas.pagination import Page
 from db.models.rentals import Rental
 from db.database import get_db
@@ -13,7 +15,8 @@ router = APIRouter(prefix="/rentals", tags=["rentals"])
 def get_rentals(
     skip: int = Query(0, ge=0),
     limit: int = Query(10, ge=1, le=50),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin)
 ):
     total = db.query(Rental).count()
 
@@ -30,7 +33,8 @@ def get_rentals(
 @router.get("/{rental_id}", response_model=RentalResponse)
 def get_rental(
     rental_id: uuid.UUID,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin)
 ):
     rental =  db.query(Rental).filter(Rental.id == rental_id).first()
     if not rental:
@@ -70,7 +74,8 @@ def update_rental(
 @router.delete("/{rental_id}", status_code=204)
 def delete_rental(
     rental_id: uuid.UUID,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin)
 ):
     rental = db.query(Rental).filter(Rental.id == rental_id).first()
     if not rental:

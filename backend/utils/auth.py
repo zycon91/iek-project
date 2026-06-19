@@ -122,3 +122,13 @@ async def get_current_user(
     db.commit()
     db.refresh(user)
     return user
+
+
+def require_admin(
+        user: User = Depends(get_current_user)
+) -> User:
+    """Authorization guard: επιτρέπει μόνο admins. Πρώτα τρέχει το
+    get_current_user (authentication) και μετά ελέγχουμε τον ρόλο."""
+    if user.role != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return user

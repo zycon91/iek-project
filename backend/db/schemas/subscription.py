@@ -1,13 +1,13 @@
 import uuid
 from pydantic import BaseModel
-from datetime import date
+from datetime import datetime
 
 
 class SubscriptionBase(BaseModel):
     user_id: uuid.UUID
     plan: str
-    start_date: date
-    end_date: date
+    start_date: datetime
+    end_date: datetime
     is_active: bool
 
 
@@ -17,8 +17,8 @@ class SubscriptionCreate(SubscriptionBase):
 
 class SubscriptionUpdate(BaseModel):
     plan: str | None = None
-    start_date: date | None = None
-    end_date: date | None = None
+    start_date: datetime | None = None
+    end_date: datetime | None = None
 
 
 class SubscriptionResponse(SubscriptionBase):

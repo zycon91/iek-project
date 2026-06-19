@@ -112,6 +112,52 @@ export async function getMovie(id: string): Promise<MovieDetail> {
   return res.json();
 }
 
+// Αντιστοιχεί στο MovieSearchResult του backend (GET /movies/search)
+export type TmdbSearchResult = {
+  tmdb_id: number;
+  title: string;
+  release_date: string; // "YYYY-MM-DD" ή "N/A"
+  description: string;
+  rating: number;
+};
+
+// Αναζήτηση στο TMDB μέσω του backend — δεν αποθηκεύει τίποτα.
+// Το `token` είναι το Clerk session token (από useAuth().getToken()) — το
+// endpoint απαιτεί authentication.
+export async function searchTmdb(
+  q: string,
+  token: string,
+): Promise<TmdbSearchResult[]> {
+  const res = await fetch(`${API_URL}/movies/search?q=${encodeURIComponent(q)}`, {
+    cache: "no-store",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    throw new Error(`Αποτυχία αναζήτησης (${res.status})`);
+  }
+  return res.json();
+}
+
+// Δημιουργία ταινίας στη βάση από tmdb_id — POST /movies (το backend φέρνει
+// στοιχεία + poster από το TMDB). Απαιτεί authentication.
+export async function createMovieFromTmdb(
+  tmdbId: number,
+  token: string,
+): Promise<MovieDetail> {
+  const res = await fetch(`${API_URL}/movies/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ tmdb_id: tmdbId }),
+  });
+  if (!res.ok) {
+    throw new Error(`Αποτυχία προσθήκης (${res.status})`);
+  }
+  return res.json();
+}
+
 export type CheckoutKind = "rental" | "purchase";
 
 // Ζητά από το backend ένα Stripe Checkout session και επιστρέφει το URL πληρωμής.

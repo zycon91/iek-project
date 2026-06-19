@@ -1,5 +1,6 @@
 import { getMovies, formatDate, type Movie } from "../../lib/movies";
 import { PageHeading, Table, Td, EmptyState, ErrorState } from "../components/ui";
+import AddMovie from "../components/AddMovie";
 
 export default async function MoviesAdminPage() {
   let page;
@@ -21,6 +22,7 @@ export default async function MoviesAdminPage() {
         subtitle="Ο κατάλογος ταινιών"
         count={page.total}
       />
+      <AddMovie />
       {page.items.length === 0 ? (
         <EmptyState message="Δεν υπάρχουν ταινίες ακόμη." />
       ) : (

@@ -17,6 +17,7 @@ class User(Base):
     email = Column(String, unique=True, nullable=False, index=True)
     clerk_user_id = Column(String, unique=True, nullable=True)
     stripe_customer_id = Column(String, unique=True, nullable=True)
+    role = Column(String, nullable=False, default="user", index=True)
 
     # relations
     subscriptions = relationship("Subscription", back_populates="user")

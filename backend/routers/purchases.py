@@ -2,6 +2,8 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
+from db.models.users import User
+from utils.auth import require_admin
 from db.schemas.pagination import Page
 from db.models.purchases import Purchase
 from db.database import get_db
@@ -14,7 +16,8 @@ router = APIRouter(prefix="/purchases", tags=["purchases"])
 def get_purchases(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin)
 ):
     total = db.query(Purchase).count()
 

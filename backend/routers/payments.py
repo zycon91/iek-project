@@ -2,6 +2,8 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
+from db.models.users import User
+from utils.auth import require_admin
 from db.schemas.pagination import Page
 from db.models.payments import Payment
 from db.database import get_db
@@ -14,7 +16,8 @@ router = APIRouter(prefix="/payments", tags=["payments"])
 def get_payments(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin)
 ):
     total = db.query(Payment).count()
 
@@ -31,7 +34,8 @@ def get_payments(
 @router.get("/{payment_id}", response_model=PaymentResponse)
 def get_payment(
     payment_id: uuid.UUID,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin)
 ):
     payment = db.query(Payment).filter(
         Payment.id == payment_id

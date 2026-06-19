@@ -5,6 +5,8 @@ from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from dotenv import load_dotenv
 
+from db.models.users import User
+from utils.auth import require_admin
 from db.schemas.pagination import Page
 from db.database import get_db
 from db.models.movies import Movie
@@ -29,8 +31,9 @@ router = APIRouter(prefix="/movies", tags=["movies"])
 # --- Search στο TMDB (δεν σώζει στη DB) ---
 @router.get("/search", response_model=list[MovieSearchResult])
 def search_movies(
-    q: str = Query(..., description="Τίτλος ταινίας")
-    ):
+    q: str = Query(..., description="Τίτλος ταινίας"),
+    admin: User = Depends(require_admin)
+):
     res = requests.get(
         f"{TMDB_BASE_URL}/search/movie",
         params={"api_key": TMDB_API_KEY, "query": q}
@@ -53,8 +56,9 @@ def search_movies(
 @router.post("/", response_model=MovieResponse, status_code=201)
 def create_movie(
     data: MovieImport, 
-    db: Session = Depends(get_db)
-    ):
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin)
+):
     # Fetch λεπτομερειών από TMDB με το tmdb_id
     res = requests.get(
         f"{TMDB_BASE_URL}/movie/{data.tmdb_id}",
@@ -154,6 +158,7 @@ def upload_movie_poster(
     movie_id: uuid.UUID,
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
+    admin: User = Depends(require_admin)
 ):
     movie = db.query(Movie).filter(Movie.id == movie_id).first()
     if not movie:
@@ -201,6 +206,7 @@ def upload_movie_poster(
 def delete_movie_poster(
     movie_id: uuid.UUID,
     db: Session = Depends(get_db),
+    admin: User = Depends(require_admin)
 ):
     movie = db.query(Movie).filter(Movie.id == movie_id).first()
     if not movie:
